@@ -48,8 +48,8 @@ function messageBoardService(tables = devTables) {
         .order('bumped_on', { ascending: false })
         .eq('board', board)
         .limit(10)
-        .order('created_on', { foreignTable: 'replies', ascending: false })
-        .limit(3, { foreignTable: 'replies' });
+        .order('created_on', { foreignTable: tables.replies, ascending: false })
+        .limit(3, { foreignTable: tables.replies });
 
       if (data === null) throw 'Error getting threads';
 
@@ -61,6 +61,10 @@ function messageBoardService(tables = devTables) {
         .from(tables.threads)
         .update({ reported: true }, { count: 'exact' })
         .match({ _id: thread_id, board });
+
+      if (error) {
+        console.log(error);
+      }
 
       if (error | !count) return 'Error reporting thread';
 
@@ -144,13 +148,17 @@ function messageBoardService(tables = devTables) {
             created_on,
             text,
             board,
-            replies:replies (
+            replies:${tables.replies} (
               _id,
               created_on,
               text)
           `
         )
-        .match({ _id: thread_id, board });
+        .match({ _id: thread_id, board })
+        .order('created_on', {
+          foreignTable: tables.replies,
+          ascending: false,
+        });
 
       if (error) throw error;
 
@@ -158,6 +166,7 @@ function messageBoardService(tables = devTables) {
         data === null || (Array.isArray(data) && data.length === 0);
 
       if (notFound) {
+        console.log('thread not found', thread_id);
         return {};
       }
 
