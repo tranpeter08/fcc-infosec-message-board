@@ -22,7 +22,7 @@ app.use(
     },
 
     referrerPolicy: {
-      policy: ['origin'],
+      policy: ['same-origin'],
     },
   })
 );

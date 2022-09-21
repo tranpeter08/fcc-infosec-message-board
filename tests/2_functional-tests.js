@@ -77,7 +77,40 @@ suite('Functional Tests', function () {
 
         savedThreadForDelete = thread;
 
-        console.log({ savedThreadForDelete });
+        done();
+      });
+  });
+
+
+  test('Deleting a thread with the incorrect password: DELETE request to /api/threads/{board} with an invalid delete_password', (done) => {
+    const wrongPassword = 'wrongpassword';
+
+    chai
+      .request(server)
+      .delete(threadEndpoint + board)
+      .type('form')
+      .send({
+        thread_id: savedThreadForDelete._id,
+        delete_password: wrongPassword,
+      })
+      .end((err, res) => {
+        assert.typeOf(res.text, 'string');
+        assert.equal(res.text, 'incorrect password');
+        done();
+      });
+  });
+
+  test('Deleting a thread with the correct password: DELETE request to /api/threads/{board} with a valid delete_password', (done) => {
+    const { delete_password, _id } = savedThreadForDelete;
+
+    chai
+      .request(server)
+      .delete(threadEndpoint + board)
+      .type('form')
+      .send({ thread_id: _id, delete_password })
+      .end((err, res) => {
+        assert.typeOf(res.text, 'string');
+        assert.equal(res.text, 'success');
         done();
       });
   });
@@ -118,39 +151,6 @@ suite('Functional Tests', function () {
       });
   });
 
-  test('Deleting a thread with the incorrect password: DELETE request to /api/threads/{board} with an invalid delete_password', (done) => {
-    const wrongPassword = 'wrongpassword';
-
-    chai
-      .request(server)
-      .delete(threadEndpoint + board)
-      .type('form')
-      .send({
-        thread_id: savedThreadForDelete._id,
-        delete_password: wrongPassword,
-      })
-      .end((err, res) => {
-        assert.typeOf(res.body, 'string');
-        assert.equal(res.body, 'incorrect password');
-        done();
-      });
-  });
-
-  test('Deleting a thread with the correct password: DELETE request to /api/threads/{board} with a valid delete_password', (done) => {
-    const { delete_password, _id } = savedThreadForDelete;
-
-    chai
-      .request(server)
-      .delete(threadEndpoint + board)
-      .type('form')
-      .send({ thread_id: _id, delete_password })
-      .end((err, res) => {
-        assert.typeOf(res.body, 'string');
-        assert.equal(res.body, 'success');
-        done();
-      });
-  });
-
   test('Reporting a thread: PUT request to /api/threads/{board}', (done) => {
     const index = randomIndex();
 
@@ -165,9 +165,9 @@ suite('Functional Tests', function () {
       .request(server)
       .put(threadEndpoint + board)
       .type('form')
-      .send({ thread_id: _id })
+      .send({ report_id: _id })
       .end((err, res) => {
-        const message = res.body;
+        const message = res.text;
         assert.typeOf(message, 'string');
         assert.equal(message, success);
         done();
@@ -234,7 +234,7 @@ suite('Functional Tests', function () {
       .type('form')
       .send({ reply_id: _id, thread_id, delete_password: wrongPassword })
       .end((err, res) => {
-        const message = res.body;
+        const message = res.text;
         assert.typeOf(message, 'string');
         assert.equal(message, fail);
 
@@ -252,7 +252,7 @@ suite('Functional Tests', function () {
       .type('form')
       .send({ reply_id: _id, thread_id })
       .end((err, res) => {
-        const message = res.body;
+        const message = res.text;
         assert.typeOf(message, 'string');
         assert.equal(message, success);
         done();
@@ -269,7 +269,7 @@ suite('Functional Tests', function () {
       .type('form')
       .send({ reply_id: _id, thread_id, delete_password })
       .end((err, res) => {
-        const message = res.body;
+        const message = res.text;
         assert.typeOf(message, 'string');
         assert.equal(message, success);
 

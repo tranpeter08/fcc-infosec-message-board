@@ -66,7 +66,7 @@ function messageBoardService(tables = devTables) {
         console.log(error);
       }
 
-      if (error | !count) return 'Error reporting thread';
+      if (error || !count) return 'Error reporting thread';
 
       return 'reported';
     },
@@ -84,7 +84,7 @@ function messageBoardService(tables = devTables) {
           delete_password,
         });
 
-      if (error) throw error;
+      // if (error) throw error;
       if (!count) return fail;
 
       const { error: replyError } = await supabase
@@ -92,14 +92,17 @@ function messageBoardService(tables = devTables) {
         .delete()
         .match({ thread_id });
 
-      if (replyError) throw replyError;
+      if (replyError) {
+        console.log('reply thread error', error)
+        return fail;
+      };
 
       const { error: threadError, count: deleteCount } = await supabase
         .from(tables.threads)
         .delete({ count: 'exact' })
         .match({ _id: thread_id, board, delete_password });
 
-      if (threadError) throw threadError;
+      // if (threadError) throw threadError;
       if (!deleteCount) return fail;
 
       return success;
@@ -167,7 +170,7 @@ function messageBoardService(tables = devTables) {
 
       if (notFound) {
         console.log('thread not found', thread_id);
-        return {};
+        return 'thread not found';
       }
 
       return data[0];
@@ -185,7 +188,6 @@ function messageBoardService(tables = devTables) {
         .match({ _id: reply_id, thread_id });
 
       const responses = await Promise.all([threadReq, replyReq]);
-      console.log(responses);
 
       for (const resp of responses) {
         const { count, error, statusText } = resp;
@@ -223,7 +225,7 @@ function messageBoardService(tables = devTables) {
         .update({ text: '[deleted]' }, { count: 'exact' })
         .match(queryParams);
 
-      if (updatedError) throw updatedError;
+      // if (updatedError) throw updatedError;
       if (!updatedCount) return fail;
 
       return success;

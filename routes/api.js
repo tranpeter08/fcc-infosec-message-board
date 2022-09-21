@@ -54,8 +54,7 @@ module.exports = function (app) {
           const { board } = req.params;
           const { thread_id, delete_password } = req.body;
           const data = await deleteThread(thread_id, board, delete_password);
-
-          res.json(data);
+          res.send(data);
         } catch (error) {
           next(error);
         }
@@ -63,14 +62,13 @@ module.exports = function (app) {
     )
     .put(
       upload.none(),
-      validateReqBodyFields(['thread_id']),
+      validateReqBodyFields(['report_id']),
       async (req, res, next) => {
         try {
           const { board } = req.params;
-          const { thread_id } = req.body;
-          const data = await reportThread(thread_id, board);
-
-          res.json(data);
+          const { report_id } = req.body;
+          const data = await reportThread(report_id, board);
+          res.send(data);
         } catch (error) {
           next(error);
         }
@@ -79,7 +77,9 @@ module.exports = function (app) {
 
   app
     .route('/api/replies/:board')
-    .post(upload.none(), async (req, res, next) => {
+    .post(upload.none(),
+      validateReqBodyFields(['text', 'delete_password', 'thread_id']), 
+      async (req, res, next) => {
       try {
         const { board } = req.params;
         const { text, delete_password, thread_id } = req.body;
@@ -111,6 +111,7 @@ module.exports = function (app) {
         try {
           const { board } = req.params;
           const { thread_id, reply_id, delete_password } = req.body;
+          
           const data = await deleteReply(
             thread_id,
             reply_id,
@@ -118,7 +119,7 @@ module.exports = function (app) {
             board
           );
 
-          res.json(data);
+          res.send(data);
         } catch (error) {
           next(error);
         }
@@ -126,14 +127,13 @@ module.exports = function (app) {
     )
     .put(
       upload.none(),
-      validateReqBodyFields(['thread_id', 'reply_id']),
+      // validateReqBodyFields(['thread_id', 'reply_id']),
       async (req, res, next) => {
         try {
           const { board } = req.params;
           const { thread_id, reply_id } = req.body;
           const data = await reportReply(thread_id, reply_id, board);
-
-          res.json(data);
+          res.send(data);
         } catch (error) {
           next(error);
         }
